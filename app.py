@@ -8,6 +8,8 @@ from flask_cors import CORS, cross_origin
 
 import uuid
 
+import sys
+
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -74,7 +76,8 @@ def getAllDoctors():
 
 @app.route('/addNewAppointment', methods=['POST'])
 def addNewAppointment():
-
+    print("alma")
+    sys.stdout.flush()
     try:
         doctor_id = request.args.get('doctor_id')
         if doctor_id:
@@ -115,7 +118,6 @@ def deleteAppointment():
 
 @app.route('/addNewCabinetDoctor', methods=['POST'])
 def addNewCabinetDoctor():
-    print("alma")
     try:
         cabinet_id = request.args.get('cabinet_id')
         if cabinet_id:
@@ -131,7 +133,7 @@ def addNewCabinetDoctor():
 
             return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({"msg": e}), 500
+        return jsonify({"msg": "An error occured!"}), 500
 
 
 @app.route('/getCabinetDoctors', methods=['GET'])
