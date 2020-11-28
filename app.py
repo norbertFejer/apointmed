@@ -134,6 +134,24 @@ def addNewCabinetDoctor():
         return jsonify({"msg": "An error occured!"}), 500
 
 
+@app.route('/getCabinetDoctors', methods=['GET'])
+def getCabinetDoctors():
+
+    try:
+        cabinet_id = request.args.get('cabinet_id')
+
+        if cabinet_id:
+            doctors = []
+            doctor_ids_dict = medical_cabinet_ref.document(cabinet_id).collection("employees").document("doctors").get().to_dict()
+            for doctor_id in doctor_ids_dict['doctor_id']:
+                doctor = doctors_ref.document(doctor_id).get().to_dict()
+                doctors.append(doctor)
+
+        return jsonify(doctors), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
 
 
 port = int(os.environ.get('PORT', 8080))
