@@ -115,7 +115,7 @@ def deleteAppointment():
 
 @app.route('/addNewCabinetDoctor', methods=['POST'])
 def addNewCabinetDoctor():
-    print("ittt")
+    print("alma")
     try:
         cabinet_id = request.args.get('cabinet_id')
         if cabinet_id:
