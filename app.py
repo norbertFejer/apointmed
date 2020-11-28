@@ -76,10 +76,6 @@ def getAllDoctors():
 
 @app.route('/addNewAppointment', methods=['POST'])
 def addNewAppointment():
-    print("addNewAppointment called...")
-    sys.stdout.flush()
-    print('req')
-    print(request.json)
     try:
         doctor_id = request.args.get('doctor_id')
         if doctor_id:
@@ -157,6 +153,47 @@ def getCabinetDoctors():
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
 
+
+@app.route('/getDoctorBusyDays', methods=['GET'])
+def getDoctorBusyDays():
+
+    try:
+        doctor_id = request.args.get('doctor_id')
+        month_id = request.args.get('month')
+        if doctor_id and month_id:
+            if len(month_id) == 1:
+                month_id = "0" + month_id
+
+            appointments = doctors_ref.document(doctor_id).collection('appointments').stream()
+
+            used_days = []
+            for appoint in appointments:
+                # 8 means all day is full, so we program each patient in every 60 min
+                if appoint.to_dict()['date'][5:7] == month_id and len(appoint.to_dict()['hour']) >= 8:
+                    print(appoint.to_dict())
+                    used_days.append(appoint.to_dict()['date'])
+
+        return jsonify(used_days), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
+@app.route('/getDoctorBusyHours', methods=['GET'])
+def getDoctorBusyHours():
+
+    try:
+        doctor_id = request.args.get('doctor_id')
+        date_id = request.args.get('date')
+        if doctor_id and date_id:
+
+            busy_hours = doctors_ref.document(doctor_id).collection('appointments').document(date_id).get().to_dict()['hour']
+            if busy_hours != None:
+                print(busy_hours)
+                return jsonify(busy_hours), 200
+
+        return jsonify([]), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
 
 
 
