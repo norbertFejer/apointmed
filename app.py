@@ -18,8 +18,13 @@ db = firestore.client()
 medical_cabinet_ref = db.collection('medical_cabinets')
 doctors_ref = db.collection('doctors')
 
+@app.route('/')
+def hello():
+    return "Appointmed app is running..."
+
+
 @app.route('/addNewMedicalCabinet', methods=['POST'])
-def create():
+def addNewMedicalCabinet():
     """
         create() : Add document to Firestore collection with request body.
         Ensure you pass a custom ID as part of json body in post request,
