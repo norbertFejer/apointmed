@@ -131,7 +131,7 @@ def addNewCabinetDoctor():
 
             return jsonify({"success": True}), 200
     except Exception as e:
-        return jsonify({"msg": "An error occured!"}), 500
+        return jsonify({"msg": e}), 500
 
 
 @app.route('/getCabinetDoctors', methods=['GET'])
