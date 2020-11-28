@@ -78,6 +78,8 @@ def getAllDoctors():
 def addNewAppointment():
     print("addNewAppointment called...")
     sys.stdout.flush()
+    print('req')
+    print(request.json)
     try:
         doctor_id = request.args.get('doctor_id')
         if doctor_id:
