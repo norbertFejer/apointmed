@@ -4,11 +4,15 @@
 import os
 from flask import Flask, request, jsonify
 from firebase_admin import credentials, firestore, initialize_app
+from flask_cors import CORS, cross_origin
 
 import uuid
 
 # Initialize Flask app
 app = Flask(__name__)
+
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # Initialize Firestore DB
 cred = credentials.Certificate('key.json')
@@ -24,14 +28,12 @@ def hello():
 
 
 @app.route('/addNewMedicalCabinet', methods=['POST'])
+@cross_origin()
 def addNewMedicalCabinet():
-    """
-        create() : Add document to Firestore collection with request body.
-        Ensure you pass a custom ID as part of json body in post request,
-        e.g. json={'id': '1', 'title': 'Write a blog post'}
-    """
+
     try:
-        id =  str(uuid.uuid1())
+        id = str(uuid.uuid1())
+        request.json['id'] = id
         medical_cabinet_ref.document(id).set(request.json)
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -40,11 +42,7 @@ def addNewMedicalCabinet():
 
 @app.route('/getAllMedicalCabinet', methods=['GET'])
 def getAllMedicalCabinet():
-    """
-        read() : Fetches documents from Firestore collection as JSON.
-        todo : Return document that matches query ID.
-        all_todos : Return all documents.
-    """
+
     try:
         all_cabinets = [doc.to_dict() for doc in medical_cabinet_ref.stream()]
         return jsonify(all_cabinets), 200
@@ -54,13 +52,10 @@ def getAllMedicalCabinet():
 
 @app.route('/addNewDoctor', methods=['POST'])
 def addNewDoctor():
-    """
-        create() : Add document to Firestore collection with request body.
-        Ensure you pass a custom ID as part of json body in post request,
-        e.g. json={'id': '1', 'title': 'Write a blog post'}
-    """
+
     try:
         id =  str(uuid.uuid1())
+        request.json['id'] = id
         doctors_ref.document(id).set(request.json)
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -69,11 +64,7 @@ def addNewDoctor():
 
 @app.route('/getAllDoctors', methods=['GET'])
 def getAllDoctors():
-    """
-        read() : Fetches documents from Firestore collection as JSON.
-        todo : Return document that matches query ID.
-        all_todos : Return all documents.
-    """
+
     try:
         all_doctors = [doc.to_dict() for doc in doctors_ref.stream()]
         return jsonify(all_doctors), 200
@@ -81,36 +72,68 @@ def getAllDoctors():
         return jsonify({"msg": "An error occured!"}), 500
 
 
+@app.route('/addNewAppointment', methods=['POST'])
+def addNewAppointment():
 
-
-#############################################################################################################
-@app.route('/update', methods=['POST', 'PUT'])
-def update():
-    """
-        update() : Update document in Firestore collection with request body.
-        Ensure you pass a custom ID as part of json body in post request,
-        e.g. json={'id': '1', 'title': 'Write a blog post today'}
-    """
     try:
-        id = request.json['id']
-        todo_ref.document(id).update(request.json)
-        return jsonify({"success": True}), 200
+        doctor_id = request.args.get('doctor_id')
+        if doctor_id:
+            appointment = doctors_ref.document(doctor_id).collection("appointments").document(request.json['date'])
+            app_dict = appointment.get().to_dict()
+
+            if app_dict == None:
+                request.json['hour'] = [request.json['hour']]
+                appointment.set(request.json)
+            else:
+                app_dict['hour'].append(request.json['hour'])
+                appointment.update(app_dict)
+
+            return jsonify({"success": True}), 200
     except Exception as e:
-        return f"An Error Occured: {e}"
+        return jsonify({"msg": "An error occured!"}), 500
 
 
-@app.route('/delete', methods=['GET', 'DELETE'])
-def delete():
-    """
-        delete() : Delete a document from Firestore collection.
-    """
+@app.route('/deleteAppointment', methods=['DELETE'])
+def deleteAppointment():
+
     try:
-        # Check for ID in URL query
-        todo_id = request.args.get('id')
-        todo_ref.document(todo_id).delete()
-        return jsonify({"success": True}), 200
+        doctor_id = request.args.get('doctor_id')
+        if doctor_id:
+            appointment = doctors_ref.document(doctor_id).collection("appointments").document(request.json['date'])
+            app_dict = appointment.get().to_dict()
+
+            if app_dict == None:
+                return jsonify({"no content": True}), 204
+            else:
+                app_dict['hour'].remove(request.json['hour'])
+                appointment.update(app_dict)
+                
+            return jsonify({"success": True}), 200
     except Exception as e:
-        return f"An Error Occured: {e}"
+        return jsonify({"msg": "An error occured!"}), 500
+
+
+@app.route('/addNewCabinetDoctor', methods=['POST'])
+def addNewCabinetDoctor():
+
+    try:
+        cabinet_id = request.args.get('cabinet_id')
+        if cabinet_id:
+            cab_doctors = medical_cabinet_ref.document(cabinet_id).collection("employees").document("doctors")
+            cab_doctors_dict = cab_doctors.get().to_dict()
+
+            if cab_doctors_dict == None:
+                request.json['doctor_id'] = [request.json['doctor_id']]
+                cab_doctors.set(request.json)
+            else:
+                cab_doctors_dict['doctor_id'].append(request.json['doctor_id'])
+                cab_doctors.update(cab_doctors_dict)
+
+            return jsonify({"success": True}), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
 
 
 port = int(os.environ.get('PORT', 8080))
