@@ -76,7 +76,7 @@ def getAllDoctors():
 
 @app.route('/addNewAppointment', methods=['POST'])
 def addNewAppointment():
-    print("alma")
+    print("addNewAppointment called...")
     sys.stdout.flush()
     try:
         doctor_id = request.args.get('doctor_id')
@@ -93,6 +93,8 @@ def addNewAppointment():
 
             return jsonify({"success": True}), 200
     except Exception as e:
+        print(e)
+        sys.stdout.flush()
         return jsonify({"msg": "An error occured!"}), 500
 
 
