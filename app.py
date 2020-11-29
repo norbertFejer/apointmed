@@ -503,6 +503,23 @@ def voteDoctor():
         return jsonify({"msg": "An error occured!"}), 500
 
 
+@app.route('/getDoctorById', methods=['GET'])
+def getDoctorById():
+
+    try:
+        doctor_id = request.args.get('doctor_id')
+
+        if doctor_id:
+            doctor = doctors_ref.document(doctor_id).get().to_dict()
+            
+            return jsonify(doctor), 200
+        else:
+            return jsonify({"success": False}), 405
+
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
 
 
 port = int(os.environ.get('PORT', 8080))
