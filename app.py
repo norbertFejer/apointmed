@@ -486,7 +486,7 @@ def voteDoctor():
 
         doctor = doctors_ref.document(doctor_id).get().to_dict()
         doctor['voteCount'] = doctor['voteCount'] + 1
-        doctor['voteSum'] = int(doctor['voteSum']) + int(score)
+        doctor['voteSum'] = float(doctor['voteSum']) + float(score)
         doctor['score'] = doctor['voteSum'] / doctor['voteCount']
 
         doctors_ref.document(doctor_id).update({
