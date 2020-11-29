@@ -370,11 +370,16 @@ def getNewsFeed():
             for headline in top_headlines['articles']:
                 del headline['source']
 
-            return jsonify(top_headlines), 200
+            return jsonify(top_headlines['articles']), 200
         else:
             return jsonify({"success": False}), 405
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
+
+
+###############################################################################################################3
+# Geocoding
+
 
 
 
