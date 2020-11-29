@@ -23,6 +23,7 @@ db = firestore.client()
 
 medical_cabinet_ref = db.collection('medical_cabinets')
 doctors_ref = db.collection('doctors')
+specialization_ref = db.collection('specializations')
 
 @app.route('/')
 def hello():
@@ -192,6 +193,50 @@ def getDoctorBusyHours():
                 return jsonify(busy_hours), 200
 
         return jsonify([]), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
+@app.route('/addNewSpecialization', methods=['POST'])
+def addNewSpecialization():
+
+    try:
+        id = str(uuid.uuid1())
+        request.json['id'] = id
+        specialization_ref.document(id).set(request.json)
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
+@app.route('/getSpecializations', methods=['GET'])
+def getSpecializations():
+
+    try:
+        specializations = specialization_ref.stream()
+
+        spec_list = []
+        for spec in specializations:
+            spec_list.append(spec.to_dict()['name'])
+
+        return jsonify(spec_list), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
+@app.route('/getSymptoms', methods=['GET'])
+def getSymptoms():
+
+    try:
+        specializations = specialization_ref.stream()
+
+        symptons_list = []
+        for spec in specializations:
+            symptons_list =  symptons_list + spec.to_dict()['symptons']
+
+        symptons_list = list(set(symptons_list)) 
+        return jsonify(symptons_list), 200
+
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
 
