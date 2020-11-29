@@ -497,6 +497,9 @@ def voteDoctor():
 
         return jsonify({"success": True}), 200
     except Exception as e:
+        print(e)
+        print(request.json['doctor_id'], ' doctor_id--')
+        print(request.json['score'], ' score--')
         return jsonify({"msg": "An error occured!"}), 500
 
 
