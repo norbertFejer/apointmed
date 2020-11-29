@@ -63,14 +63,14 @@ def addNewMedicalCabinet():
 def getAllMedicalCabinet():
 
     try:
-        lat_me = request.args.get('lat')
-        lon_me = request.args.get('lon')
+        lat_me = float(request.args.get('lat'))
+        lon_me = float(request.args.get('lon'))
 
         #default random values
-        if not lat_me:
+        if not lat_me or lat_me == 0.0:
             lat_me = 46.44355
 
-        if not lon_me:
+        if not lon_me or lon_me == 0.0:
             lon_me = 24.54084
 
         all_cabinets = [doc.to_dict() for doc in medical_cabinet_ref.stream()]
@@ -299,8 +299,14 @@ def getCabinetBySpecifications():
         cabinet_list = []
 
         # my current coords
-        lat_me = request.args.get('lat')
-        lon_me = request.args.get('lon')
+        lat_me = float(request.args.get('lat'))
+        lon_me = float(request.args.get('lon'))
+
+        if not lat_me or lat_me == 0.0:
+            lat_me = 46.44355
+
+        if not lon_me or lon_me == 0.0:
+            lon_me = 24.54084
 
         searched_specializations = request.json['specializations']
         for cabinet in cabinets:
@@ -380,8 +386,14 @@ def getCabinetBySymptons():
         searched_symptons = request.json['symptons']
 
         # my current coords
-        lat_me = request.args.get('lat')
-        lon_me = request.args.get('lon')
+        lat_me = float(request.args.get('lat'))
+        lon_me = float(request.args.get('lon'))
+
+        if not lat_me or lat_me == 0.0:
+            lat_me = 46.44355
+
+        if not lon_me or lon_me == 0.0:
+            lon_me = 24.54084
 
         specializations = specialization_ref.stream()
 
