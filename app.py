@@ -241,6 +241,119 @@ def getSymptoms():
         return jsonify({"msg": "An error occured!"}), 500
 
 
+@app.route('/getCabinetBySpecifications', methods=['GET'])
+def getCabinetBySpecifications():
+
+    try:
+        cabinets = medical_cabinet_ref.stream()
+        cabinet_list = []
+
+        searched_specializations = request.json['specializations']
+        for cabinet in cabinets:
+            cabinet_id = cabinet.to_dict()['id']
+
+            doctor_ids_dict = medical_cabinet_ref.document(cabinet_id).collection("employees").document("doctors").get().to_dict()
+
+            if doctor_ids_dict != None:
+
+                for doctor_id in doctor_ids_dict['doctor_id']:
+                    doctor = doctors_ref.document(doctor_id).get().to_dict()
+
+                    if doctor['specialization'] in searched_specializations:
+                        cabinet_list.append(cabinet.to_dict())
+                        break
+
+        return jsonify(cabinet_list), 200
+    except Exception as e:
+        return jsonify({"msg": e}), 500
+
+
+@app.route('/getDoctorBySpecifications', methods=['GET'])
+def getDoctorBySpecifications():
+
+    try:
+
+        searched_specializations = request.json['specializations']
+        doctor_ids_dict = doctors_ref.stream()
+
+        doctor_list = []
+        for doctor in doctor_ids_dict:
+            if doctor.to_dict()['specialization'] in searched_specializations:
+                doctor_list.append(doctor.to_dict())
+
+
+        return jsonify(doctor_list), 200
+    except Exception as e:
+        return jsonify({"msg": e}), 500
+
+
+@app.route('/getDoctorBySymptons', methods=['GET'])
+def getDoctorBySymptons():
+
+    try:
+
+        searched_symptons = request.json['symptons']
+        specializations = specialization_ref.stream()
+
+        found_specializations = []
+        for specialization in specializations:
+            for tmp_sym in specialization.to_dict()['symptons']:
+                if tmp_sym in searched_symptons:
+                    print(tmp_sym)
+                    found_specializations.append(specialization.to_dict()['name'])
+
+        found_specializations = list(set(found_specializations))
+
+        doctor_ids_dict = doctors_ref.stream()
+        doctor_list = []
+        for doctor in doctor_ids_dict:
+            if doctor.to_dict()['specialization'] in found_specializations:
+                doctor_list.append(doctor.to_dict())
+
+        return jsonify(doctor_list), 200
+    except Exception as e:
+        return jsonify({"msg": e}), 500
+
+
+@app.route('/getCabinetBySymptons', methods=['GET'])
+def getCabinetBySymptons():
+
+    try:
+
+        searched_symptons = request.json['symptons']
+        specializations = specialization_ref.stream()
+
+        found_specializations = []
+        for specialization in specializations:
+            for tmp_sym in specialization.to_dict()['symptons']:
+                if tmp_sym in searched_symptons:
+                    found_specializations.append(specialization.to_dict()['name'])
+
+        found_specializations = list(set(found_specializations))
+
+        cabinets = medical_cabinet_ref.stream()
+        cabinet_list = []
+
+        for cabinet in cabinets:
+            cabinet_id = cabinet.to_dict()['id']
+
+            doctor_ids_dict = medical_cabinet_ref.document(cabinet_id).collection("employees").document("doctors").get().to_dict()
+
+            if doctor_ids_dict != None:
+
+                for doctor_id in doctor_ids_dict['doctor_id']:
+                    doctor = doctors_ref.document(doctor_id).get().to_dict()
+
+                    if doctor['specialization'] in found_specializations:
+                        cabinet_list.append(cabinet.to_dict())
+                        break
+
+        return jsonify(cabinet_list), 200
+    except Exception as e:
+        return jsonify({"msg": e}), 500
+
+
+
 
 port = int(os.environ.get('PORT', 8080))
 if __name__ == '__main__':
