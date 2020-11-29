@@ -240,7 +240,7 @@ def addNewSpecialization():
         return jsonify({"msg": "An error occured!"}), 500
 
 
-@app.route('/getSpecializations', methods=['GET'])
+@app.route('/getSpecializations', methods=['GET', 'POST'])
 def getSpecializations():
 
     try:
