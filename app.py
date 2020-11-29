@@ -358,7 +358,7 @@ def getNewsFeed():
 
     try:
         newsapi = NewsApiClient(api_key='1c9365fa29e64db9a6e27f1cbd18ea88')
-        page_num = request.args.get('page')
+        page_num = 1
         page_size_num = request.args.get('pageSize')
 
         if page_num and page_size_num:
@@ -366,6 +366,9 @@ def getNewsFeed():
                                                         country='hu',
                                                         page=int(page_num),
                                                         page_size=int(page_size_num))
+
+            for headline in top_headlines['articles']:
+                del headline['source']
 
             return jsonify(top_headlines), 200
         else:
