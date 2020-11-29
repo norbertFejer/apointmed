@@ -353,7 +353,25 @@ def getCabinetBySymptons():
         return jsonify({"msg": e}), 500
 
 
+@app.route('/getNewsFeed', methods=['GET'])
+def getNewsFeed():
 
+    try:
+        newsapi = NewsApiClient(api_key='1c9365fa29e64db9a6e27f1cbd18ea88')
+        page_num = request.args.get('page')
+        page_size_num = request.args.get('pageSize')
+
+        if page_num and page_size_num:
+            top_headlines = newsapi.get_top_headlines(q='vírus',
+                                                        country='hu',
+                                                        page=int(page_num),
+                                                        page_size=int(page_size_num))
+
+            return jsonify(top_headlines), 200
+        else:
+            return jsonify({"success": False}), 405
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
 
 
 
