@@ -293,7 +293,7 @@ def getCabinetBySpecifications():
             doctor_ids_dict = medical_cabinet_ref.document(cabinet_id).collection("employees").document("doctors").get().to_dict()
 
             if doctor_ids_dict != None:
-
+                
                 for doctor_id in doctor_ids_dict['doctor_id']:
                     doctor = doctors_ref.document(doctor_id).get().to_dict()
 
