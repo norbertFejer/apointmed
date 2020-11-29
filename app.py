@@ -279,6 +279,8 @@ def getSymptoms():
 def getCabinetBySpecifications():
 
     try:
+        print('get specializations....')
+        print(request.json['specializations'])
         cabinets = medical_cabinet_ref.stream()
         cabinet_list = []
 
