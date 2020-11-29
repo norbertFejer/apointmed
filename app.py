@@ -63,7 +63,15 @@ def addNewMedicalCabinet():
 def getAllMedicalCabinet():
 
     try:
-        all_cabinets = [doc.to_dict() for doc in medical_cabinet_ref.stream()]
+        lat_me = request.args.get('lat')
+        lon_me = request.args.get('lon')
+
+        if lat_me and lon_me:
+            all_cabinets = [doc.to_dict() for doc in medical_cabinet_ref.stream()]
+            
+            all_cabinets = calculateRoute(lat_me, lon_me, all_cabinets)
+            all_cabinets = sorted(all_cabinets, key=lambda k: k.get('lengthInMeters', 0), reverse=False)
+
         return jsonify(all_cabinets), 200
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
