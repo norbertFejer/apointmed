@@ -33,6 +33,10 @@ def hello():
     return "Appointmed app is running..."
 
 
+###############################################################################################################3
+# Medical Cabinet Management
+
+
 @app.route('/addNewMedicalCabinet', methods=['POST'])
 @cross_origin()
 def addNewMedicalCabinet():
@@ -48,7 +52,6 @@ def addNewMedicalCabinet():
         
         request.json['lat'] = cab_location['lat']
         request.json['lon'] = cab_location['lon']
-
 
         medical_cabinet_ref.document(id).set(request.json)
         return jsonify({"success": True}), 200
@@ -66,12 +69,18 @@ def getAllMedicalCabinet():
         return jsonify({"msg": "An error occured!"}), 500
 
 
+###############################################################################################################3
+# Doctor Management
+
 @app.route('/addNewDoctor', methods=['POST'])
 def addNewDoctor():
 
     try:
         id =  str(uuid.uuid1())
         request.json['id'] = id
+        request.json['voteCount'] = 0
+        request.json['voteSum'] = 0
+        request.json['score'] = 0
         doctors_ref.document(id).set(request.json)
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -87,6 +96,9 @@ def getAllDoctors():
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
 
+
+###############################################################################################################3
+# Appointment Management
 
 @app.route('/addNewAppointment', methods=['POST'])
 def addNewAppointment():
@@ -128,6 +140,10 @@ def deleteAppointment():
             return jsonify({"success": True}), 200
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
+
+
+###############################################################################################################3
+# Doctor Management
 
 
 @app.route('/addNewCabinetDoctor', methods=['POST'])
@@ -209,6 +225,8 @@ def getDoctorBusyHours():
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
 
+###############################################################################################################3
+# Specializations
 
 @app.route('/addNewSpecialization', methods=['POST'])
 def addNewSpecialization():
@@ -237,6 +255,9 @@ def getSpecializations():
         return jsonify({"msg": "An error occured!"}), 500
 
 
+###############################################################################################################3
+# Symptoms
+
 @app.route('/getSymptoms', methods=['GET'])
 def getSymptoms():
 
@@ -261,6 +282,10 @@ def getCabinetBySpecifications():
         cabinets = medical_cabinet_ref.stream()
         cabinet_list = []
 
+        # my current coords
+        lat_me = request.args.get('lat')
+        lon_me = request.args.get('lon')
+
         searched_specializations = request.json['specializations']
         for cabinet in cabinets:
             cabinet_id = cabinet.to_dict()['id']
@@ -275,6 +300,9 @@ def getCabinetBySpecifications():
                     if doctor['specialization'] in searched_specializations:
                         cabinet_list.append(cabinet.to_dict())
                         break
+
+        cabinet_list = calculateRoute(lat_me, lon_me, cabinet_list)
+        cabinet_list = sorted(cabinet_list, key=lambda k: k.get('lengthInMeters', 0), reverse=False)
 
         return jsonify(cabinet_list), 200
     except Exception as e:
@@ -334,6 +362,11 @@ def getCabinetBySymptons():
     try:
 
         searched_symptons = request.json['symptons']
+
+        # my current coords
+        lat_me = request.args.get('lat')
+        lon_me = request.args.get('lon')
+
         specializations = specialization_ref.stream()
 
         found_specializations = []
@@ -361,9 +394,29 @@ def getCabinetBySymptons():
                         cabinet_list.append(cabinet.to_dict())
                         break
 
+        cabinet_list = calculateRoute(lat_me, lon_me, cabinet_list)
+        cabinet_list = sorted(cabinet_list, key=lambda k: k.get('lengthInMeters', 0), reverse=False)
+
         return jsonify(cabinet_list), 200
     except Exception as e:
         return jsonify({"msg": e}), 500
+
+
+def calculateRoute(lat_me, lon_me, cabinet_list):
+    for cabinet in cabinet_list:
+
+        baseURL = "https://api.tomtom.com/routing/1/calculateRoute/"
+        final_url = baseURL + str(cabinet['lat']) + "%2C" + str(cabinet['lon']) + "%3A" + str(lat_me) + "%2C" + str(lon_me) + "/json?maxAlternatives=1&computeTravelTimeFor=all&routeRepresentation=summaryOnly&avoid=unpavedRoads&travelMode=pedestrian&key=COkueI6xY8BRyQOjFYdOAB5FqtXXs4Rk"
+        data = requests.get(url = final_url).json()['routes'][0]['summary']
+
+        cabinet['lengthInMeters'] = data['lengthInMeters']
+        cabinet['travelTimeInSeconds'] = data['travelTimeInSeconds']
+
+    return cabinet_list
+
+
+def cabinetCmpByRoute(cabinet_a, cabinet_b):
+    return cabinet_a['lengthInMeters'] < cabinet_b['lengthInMeters']
 
 
 @app.route('/getNewsFeed', methods=['GET'])
@@ -411,18 +464,40 @@ def getPositionByLocation():
         return jsonify({"msg": "An error occured!"}), 500
 
 
-def getPositionByLocationLocal(location):
-
+def getDistanceFromStartPos(location, lat_start, lon_start):
     try:
-
-        final_url = tomTomBaseURL + location + ".json?limit=1&countrySet=RO&lat=46.31226336427369&lon=25.294251672780216&language=hu-HU&key=COkueI6xY8BRyQOjFYdOAB5FqtXXs4Rk"
+        final_url = tomTomBaseURL + location + ".json?limit=1&countrySet=RO&lat=" + lat_start + "&lon=" + lon_start + "&language=hu-HU&key=COkueI6xY8BRyQOjFYdOAB5FqtXXs4Rk"
         data = requests.get(url = final_url).json() 
         
-        return jsonify(data['results'][0]['position'])
+        return data['results'][0]['dist']
 
     except Exception as e:
-        return jsonify({"msg": "An error occured!"})
+        return None
 
+###############################################################################################################3
+# Voting system
+
+@app.route('/voteDoctor', methods=['POST'])
+def voteDoctor():
+
+    try:
+        doctor_id = request.json['doctor_id']
+        score = request.json['score']
+
+        doctor = doctors_ref.document(doctor_id).get().to_dict()
+        doctor['voteCount'] = doctor['voteCount'] + 1
+        doctor['voteSum'] = int(doctor['voteSum']) + int(score)
+        doctor['score'] = doctor['voteSum'] / doctor['voteCount']
+
+        doctors_ref.document(doctor_id).update({
+            "voteCount": doctor['voteCount'],
+            "voteSum": doctor['voteSum'],
+            "score": doctor['score']
+        })
+
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
 
 
 
