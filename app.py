@@ -240,7 +240,7 @@ def addNewSpecialization():
         return jsonify({"msg": "An error occured!"}), 500
 
 
-@app.route('/getSpecializations', methods=['GET', 'POST'])
+@app.route('/getSpecializations', methods=['GET'])
 def getSpecializations():
 
     try:
@@ -275,7 +275,7 @@ def getSymptoms():
         return jsonify({"msg": "An error occured!"}), 500
 
 
-@app.route('/getCabinetBySpecifications', methods=['GET'])
+@app.route('/getCabinetBySpecifications', methods=['GET', 'POST'])
 def getCabinetBySpecifications():
 
     try:
