@@ -9,6 +9,7 @@ from flask_cors import CORS, cross_origin
 import uuid
 from newsapi import NewsApiClient
 import sys
+import requests
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -25,6 +26,8 @@ medical_cabinet_ref = db.collection('medical_cabinets')
 doctors_ref = db.collection('doctors')
 specialization_ref = db.collection('specializations')
 
+tomTomBaseURL = "https://api.tomtom.com/search/2/geocode/"
+
 @app.route('/')
 def hello():
     return "Appointmed app is running..."
@@ -37,6 +40,16 @@ def addNewMedicalCabinet():
     try:
         id = str(uuid.uuid1())
         request.json['id'] = id
+
+        final_url = tomTomBaseURL + request.json['address'] + ".json?limit=1&countrySet=RO&lat=46.31226336427369&lon=25.294251672780216&language=hu-HU&key=COkueI6xY8BRyQOjFYdOAB5FqtXXs4Rk"
+        data = requests.get(url = final_url).json()
+
+        cab_location = data['results'][0]['position']
+        
+        request.json['lat'] = cab_location['lat']
+        request.json['lon'] = cab_location['lon']
+
+
         medical_cabinet_ref.document(id).set(request.json)
         return jsonify({"success": True}), 200
     except Exception as e:
@@ -379,6 +392,37 @@ def getNewsFeed():
 
 ###############################################################################################################3
 # Geocoding
+
+@app.route('/getPositionByLocation', methods=['GET'])
+def getPositionByLocation():
+
+    try:
+        location = request.args.get('location')
+
+        if location:
+            final_url = tomTomBaseURL + location + ".json?limit=1&countrySet=RO&lat=46.31226336427369&lon=25.294251672780216&language=hu-HU&key=COkueI6xY8BRyQOjFYdOAB5FqtXXs4Rk"
+            data = requests.get(url = final_url).json() 
+            
+            return jsonify(data['results'][0]['position']), 200
+        else:
+            return jsonify({"success": False}), 405
+
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
+def getPositionByLocationLocal(location):
+
+    try:
+
+        final_url = tomTomBaseURL + location + ".json?limit=1&countrySet=RO&lat=46.31226336427369&lon=25.294251672780216&language=hu-HU&key=COkueI6xY8BRyQOjFYdOAB5FqtXXs4Rk"
+        data = requests.get(url = final_url).json() 
+        
+        return jsonify(data['results'][0]['position'])
+
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"})
+
 
 
 
