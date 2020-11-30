@@ -463,7 +463,7 @@ def cabinetCmpByRoute(cabinet_a, cabinet_b):
 def getNewsFeed():
 
     try:
-        newsapi = NewsApiClient(api_key='1c9365fa29e64db9a6e27f1cbd18ea88')
+        newsapi = NewsApiClient(api_key='7560ef5dce1e427897e2163a8bbb1c71')
         page_num = 1
         page_size_num = request.args.get('pageSize')
 
@@ -480,7 +480,7 @@ def getNewsFeed():
         else:
             return jsonify({"success": False}), 405
     except Exception as e:
-        return jsonify({"msg": "An error occured!"}), 500
+        return jsonify({"msg": e}), 500
 
 
 ###############################################################################################################3
