@@ -25,6 +25,7 @@ db = firestore.client()
 medical_cabinet_ref = db.collection('medical_cabinets')
 doctors_ref = db.collection('doctors')
 specialization_ref = db.collection('specializations')
+users_ref = db.collection('users')
 
 tomTomBaseURL = "https://api.tomtom.com/search/2/geocode/"
 
@@ -555,6 +556,39 @@ def getDoctorById():
             return jsonify(doctor), 200
         else:
             return jsonify({"success": False}), 405
+
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
+##############################################################################
+# User management
+
+
+@app.route('/addNewUser', methods=['POST'])
+def addNewUser():
+
+    try:
+        user_id = request.json['email']
+        users_ref.document(user_id).set(request.json)
+
+        return jsonify({"success": True}), 200
+    except Exception as e:
+        return jsonify({"msg": "An error occured!"}), 500
+
+
+@app.route('/getUserById', methods=['GET'])
+def getUserById():
+
+    try:
+        user_id = request.args.get('user_id')
+        print(user_id)
+
+        if user_id:
+            user = users_ref.document(user_id).get().to_dict()
+            return jsonify(user), 200
+        else:
+            return jsonify({"msg": "Parameter is missing"}), 400
 
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
