@@ -67,12 +67,12 @@ def getAllMedicalCabinet():
         lon_me = request.args.get('lon')
 
         #default random values
-        if not lat_me or lat_me == 0.0:
+        if not lat_me or float(lat_me) == 0.0:
             lat_me = 46.44355
         else:
             lat_me = float(lat_me)
 
-        if not lon_me or lon_me == 0.0:
+        if not lon_me or float(lon_me) == 0.0:
             lon_me = 24.54084
         else:
             lon_me = float(lon_me)
@@ -306,12 +306,12 @@ def getCabinetBySpecifications():
         lat_me = request.args.get('lat')
         lon_me = request.args.get('lon')
 
-        if not lat_me or lat_me == 0.0:
+        if not lat_me or float(lat_me) == 0.0:
             lat_me = 46.44355
         else:
             lat_me = float(lat_me)
 
-        if not lon_me or lon_me == 0.0:
+        if not lon_me or float(lon_me) == 0.0:
             lon_me = 24.54084
         else:
             lon_me = float(lon_me)
@@ -397,12 +397,12 @@ def getCabinetBySymptons():
         lat_me = request.args.get('lat')
         lon_me = request.args.get('lon')
 
-        if not lat_me or lat_me == 0.0:
+        if not lat_me or float(lat_me) == 0.0:
             lat_me = 46.44355
         else:
             lat_me = float(lat_me)
 
-        if not lon_me or lon_me == 0.0:
+        if not lon_me or float(lon_me) == 0.0:
             lon_me = 24.54084
         else:
             lon_me = float(lon_me)
