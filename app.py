@@ -63,18 +63,22 @@ def addNewMedicalCabinet():
 def getAllMedicalCabinet():
 
     try:
-        lat_me = float(request.args.get('lat'))
-        lon_me = float(request.args.get('lon'))
+        lat_me = request.args.get('lat')
+        lon_me = request.args.get('lon')
 
         #default random values
         if not lat_me or lat_me == 0.0:
             lat_me = 46.44355
+        else:
+            lat_me = float(lat_me)
 
         if not lon_me or lon_me == 0.0:
             lon_me = 24.54084
+        else:
+            lon_me = float(lon_me)
 
         all_cabinets = [doc.to_dict() for doc in medical_cabinet_ref.stream()]
-        
+
         all_cabinets = calculateRoute(lat_me, lon_me, all_cabinets)
         all_cabinets = sorted(all_cabinets, key=lambda k: k.get('lengthInMeters', 0), reverse=False)
 
@@ -299,14 +303,18 @@ def getCabinetBySpecifications():
         cabinet_list = []
 
         # my current coords
-        lat_me = float(request.args.get('lat'))
-        lon_me = float(request.args.get('lon'))
+        lat_me = request.args.get('lat')
+        lon_me = request.args.get('lon')
 
         if not lat_me or lat_me == 0.0:
             lat_me = 46.44355
+        else:
+            lat_me = float(lat_me)
 
         if not lon_me or lon_me == 0.0:
             lon_me = 24.54084
+        else:
+            lon_me = float(lon_me)
 
         searched_specializations = request.json['specializations']
         for cabinet in cabinets:
@@ -386,14 +394,18 @@ def getCabinetBySymptons():
         searched_symptons = request.json['symptons']
 
         # my current coords
-        lat_me = float(request.args.get('lat'))
-        lon_me = float(request.args.get('lon'))
+        lat_me = request.args.get('lat')
+        lon_me = request.args.get('lon')
 
         if not lat_me or lat_me == 0.0:
             lat_me = 46.44355
+        else:
+            lat_me = float(lat_me)
 
         if not lon_me or lon_me == 0.0:
             lon_me = 24.54084
+        else:
+            lon_me = float(lon_me)
 
         specializations = specialization_ref.stream()
 
