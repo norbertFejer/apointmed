@@ -95,15 +95,34 @@ def getAllMedicalCabinet():
 def addNewDoctor():
 
     try:
-        id =  str(uuid.uuid1())
+        id = str(uuid.uuid1())
         request.json['id'] = id
         request.json['voteCount'] = 0
         request.json['voteSum'] = 0
         request.json['score'] = 0
         doctors_ref.document(id).set(request.json)
+
+        hc_cabinet_id = "2c6132d4-3255-11eb-ada6-4a20f095b2c8"
+        hc_addNewCabinetDoctor(hc_cabinet_id, id)
+
         return jsonify({"success": True}), 200
     except Exception as e:
         return jsonify({"msg": "An error occured!"}), 500
+
+
+def hc_addNewCabinetDoctor(cabinet_id, doctor_id):
+    print(cabinet_id)
+    print(doctor_id)
+    if cabinet_id:
+        cab_doctors = medical_cabinet_ref.document(cabinet_id).collection("employees").document("doctors")
+        cab_doctors_dict = cab_doctors.get().to_dict()
+
+        if cab_doctors_dict == None:
+            doctor_id = [doctor_id]
+            cab_doctors.set(request.json)
+        else:
+            cab_doctors_dict['doctor_id'].append(doctor_id)
+            cab_doctors.update(cab_doctors_dict)
 
 
 @app.route('/getAllDoctors', methods=['GET'])
