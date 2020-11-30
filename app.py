@@ -386,7 +386,7 @@ def getDoctorBySymptons():
         return jsonify({"msg": e}), 500
 
 
-@app.route('/getCabinetBySymptons', methods=['GET'])
+@app.route('/getCabinetBySymptons', methods=['GET', 'POST'])
 def getCabinetBySymptons():
 
     try:
